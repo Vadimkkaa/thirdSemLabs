@@ -98,20 +98,6 @@ public:
 	}
 };
 
-template<class T>
-void arrAdd(T* arr, int N) {
-	T* copy = new T[N + 1];
-	for (int i = 0; i < N; i++) {
-		copy[i] = arr[i];
-	}
-	delete[]arr;
-	arr = new T[N + 1];
-	for (int i = 0; i < N; i++) {
-		arr[i] = copy[i];
-	}
-	delete[] copy;
-}
-
 int main() {
 	string name;
 	int motivationLevel;
