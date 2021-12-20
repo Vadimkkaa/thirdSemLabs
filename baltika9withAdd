@@ -1,0 +1,843 @@
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <conio.h>
+using namespace std;
+
+#define FILEADD 1
+#define FILEREAD 2
+#define FILEREVERSEREAD 3
+#define FILEFIND 4
+#define FILEDELETEONE 5
+
+class FileIsNotOpened {
+public:
+	FileIsNotOpened() {}
+};
+
+class Tourist {
+	string name;
+	int age;
+	bool exp; // say no for attacking helicopters // true-man // false - woman
+public:
+	Tourist() {
+		name = "Unnamed";
+		age = 18;
+		exp = true;
+	}
+	Tourist(string _name, int _age, bool _exp) {
+		name = _name;
+		age = _age;
+		exp = _exp;
+	}
+	Tourist(const Tourist& obj) {
+		name = obj.name;
+		age = obj.age;
+		exp = obj.exp;
+	}
+	~Tourist() {}
+
+	void setName(string _name) {
+		name = _name;
+	}
+	void setAge(int _age) {
+		age = _age;
+	}
+	void setGender(bool _gender) {
+		exp = _gender;
+	}
+	int getAge() {
+		return age;
+	}
+	bool getGender() {
+		return exp;
+	}
+	string getName() {
+		return name;
+	}
+	void print() {
+		cout << "Name: " << name << endl;
+		cout << "Age: " << age << endl;
+		cout << "Gender: ";
+		if (exp) {
+			cout << "male" << endl;
+		}
+		else {
+			cout << "female" << endl;
+		}
+	}
+
+	friend ostream& operator<< (ostream& out, Tourist obj) {
+		out << "OBJECT PRINT" << endl;
+		out << "Name: " << obj.name << endl;
+		out << "Age: " << obj.age << endl;
+		out << "Exp: " << obj.exp << endl;
+
+		return out;
+	}
+	friend istream& operator>> (istream& in, Tourist obj) {
+		getline(in, obj.name);
+		in >> obj.age;
+		in >> obj.exp;
+		return in;
+	}
+
+
+	void txtInAddBin(string fName) {
+		ofstream out(fName, ios::app, ios::binary);
+		for (int i = 0; i < name.length(); i++) {
+			out.put(name[i]);
+		}
+		out.put(' ');
+		out.put(age);
+		out.put(' ');
+		out.put(exp);
+		out.put(' ');
+		out.close();
+	}
+	void txtInRewriteBin(string fName) {
+		ofstream out(fName, ios::binary);
+		out << name << age << exp;
+		out.close();
+	}
+
+
+	void txtTxt(string fName) {
+		string Str;
+		cout << "Choose operation" << endl;
+		cout << "1 - to add" << endl << "2 - to read" << endl << "3 - to read by FILO" << endl;
+		cout << "4 - to find" << endl << "5 - to delete" << endl;
+		int operation;
+		cin >> operation;
+		switch (operation) {
+		case 1: {
+			ofstream out(fName, ios::app);
+			if (!out) {
+				FileIsNotOpened fino;
+				throw(fino);
+			}
+			out << name << '\n' << age << '\n' << exp << '\n';
+
+			out.close();
+			break;
+		}
+		case 2: {
+			ifstream in(fName);
+			if (!in) {
+				FileIsNotOpened fino;
+				throw(fino);
+			}
+			while (in) {
+				getline(in, Str);
+				if (Str == "") {
+					continue;
+				}
+				cout << Str << endl;
+			}
+			in.close();
+			break;
+		}
+		case 3: {
+			int trigger = 0;
+			char c = ' ';
+			ifstream in(fName);
+			if (!in) {
+				FileIsNotOpened fino;
+				throw(fino);
+			}
+
+			in.seekg(-1, ios::end);
+			long long fSize = in.tellg();
+			fSize--;
+			while (fSize--) {
+				in.seekg(fSize, ios::beg);
+				in.get(c);
+				if (c != '\n' && fSize != 0) {
+					continue;
+				}
+				if (fSize == 0) {
+					in.seekg(fSize, in.beg);
+					getline(in, Str);
+					if (Str == "") break;
+					cout << Str << endl;
+					break;
+				}
+				else {
+					in.seekg(fSize + 1, in.beg);
+					getline(in, Str);
+					if (Str == "") continue;
+					cout << Str << endl;
+				}
+			}
+			in.close();
+			break;
+		}
+		case 4: {
+			string strForCmp;
+			ifstream in(fName);
+			if (!in) {
+				FileIsNotOpened fino;
+				throw(fino);
+			}
+			while (in) {
+				getline(in, strForCmp);
+				if (strForCmp == this->name) {
+					cout << name << endl;
+					getline(in, strForCmp);
+					cout << strForCmp << endl;
+					getline(in, strForCmp);
+					cout << strForCmp << endl;
+				}
+				else {
+					getline(in, strForCmp);
+					getline(in, strForCmp);
+				}
+			}
+
+			in.close();
+			break;
+		}
+		/*case 5: {
+			int linesNum = 0;
+			ifstream in(fName);
+			int lineToDelete = -1;
+			int curLineNum = 0;
+			while (in) {
+				getline(in, Str);
+				linesNum++;
+			}
+			int* arrPosToDel = new int[linesNum / 3];
+			while (in) {
+				getline(in, Str);
+				curLineNum++;
+				if (Str == this->name) {
+					lineToDelete = curLineNum;
+					getline(in, Str);
+					if (Str != to_string(age)) {
+						lineToDelete = -1;
+					}
+					getline(in, Str);
+					if (Str != to_string(exp)) {
+						lineToDelete = -1;
+					}
+				}
+				else {
+					getline(in, Str);
+					getline(in, Str);
+				}
+				in.close();
+				ofstream out(fName, ios::app);
+				if (!out) {
+					FileIsNotOpened fino;
+					throw(fino);
+				}
+
+				break;
+			}
+		}*/
+		case 5: {
+			ifstream fin(fName);
+			if (!fin) {
+				FileIsNotOpened fino;
+				throw(fino);
+			}
+			string strFile;
+			string strToAdd;
+			while (fin) {
+				getline(fin, strToAdd);
+				strFile += strToAdd;
+				strFile += "\n";
+			}
+			cout << strFile << endl;
+			string strAge = to_string(age);
+			string strExp = to_string(exp);
+			string strToFind = name + "\n" + to_string(age) + "\n" + to_string(exp) + "\n";
+			string::size_type posToDelete;
+			while (1) {
+				posToDelete = strFile.find(strToFind);
+				if (string::npos != posToDelete) {
+					strFile.erase(posToDelete, strToFind.size());
+					cout << "SET THAT WE WERE FINDING:" << endl << strToFind << endl;
+				}
+				else {
+					break;
+				}
+			}
+			fin.close();
+			ofstream out(fName);
+			out << strFile;
+			out.close();
+			break;
+		}
+		default: {
+			break;
+		}
+		}
+	}
+	void txtTxt(string fName, int operation) {
+		string Str;
+		/*cout << "Choose operation" << endl;
+		cout << "1 - to add" << endl << "2 - to read" << endl << "3 - to read by FILO" << endl;
+		cout << "4 - to find" << endl << "5 - to delete" << endl;*/
+		switch (operation) {
+		case 1: {
+			ofstream out(fName, ios::app);
+			if (!out) {
+				FileIsNotOpened fino;
+				throw(fino);
+			}
+			out << name << '\n' << age << '\n' << exp << '\n';
+
+			out.close();
+			break;
+		}
+		case 2: {
+			ifstream in(fName);
+			if (!in) {
+				FileIsNotOpened fino;
+				throw(fino);
+			}
+			while (in) {
+				getline(in, Str);
+				if (Str == "") {
+					continue;
+				}
+				cout << Str << endl;
+			}
+			in.close();
+			break;
+		}
+		case 3: {
+			int trigger = 0;
+			char c = ' ';
+			ifstream in(fName);
+			if (!in) {
+				FileIsNotOpened fino;
+				throw(fino);
+			}
+
+			in.seekg(-1, ios::end);
+			long long fSize = in.tellg();
+			fSize--;
+			while (fSize--) {
+				in.seekg(fSize, ios::beg);
+				in.get(c);
+				if (c != '\n' && fSize != 0) {
+					continue;
+				}
+				if (fSize == 0) {
+					in.seekg(fSize, in.beg);
+					getline(in, Str);
+					if (Str == "") break;
+					cout << Str << endl;
+					break;
+				}
+				else {
+					in.seekg(fSize + 1, in.beg);
+					getline(in, Str);
+					if (Str == "") continue;
+					cout << Str << endl;
+				}
+			}
+			in.close();
+			break;
+		}
+		case 4: {
+			string strForCmp;
+			ifstream in(fName);
+			if (!in) {
+				FileIsNotOpened fino;
+				throw(fino);
+			}
+			while (in) {
+				getline(in, strForCmp);
+				if (strForCmp == this->name) {
+					cout << name << endl;
+					getline(in, strForCmp);
+					cout << strForCmp << endl;
+					getline(in, strForCmp);
+					cout << strForCmp << endl;
+				}
+				else {
+					getline(in, strForCmp);
+					getline(in, strForCmp);
+				}
+			}
+
+			in.close();
+			break;
+		}
+			 
+		case 5: {
+			ifstream fin(fName);
+			if (!fin) {
+				FileIsNotOpened fino;
+				throw(fino);
+			}
+			string strFile;
+			string strToAdd;
+			while (fin) {
+				getline(fin, strToAdd);
+				strFile += strToAdd;
+				strFile += "\n";
+			}
+			cout << strFile << endl;
+			string strAge = to_string(age);
+			string strExp = to_string(exp);
+			string strToFind = name + "\n" + to_string(age) + "\n" + to_string(exp) + "\n";
+			string::size_type posToDelete;
+			while (1) {
+				posToDelete = strFile.find(strToFind);
+				if (string::npos != posToDelete) {
+					strFile.erase(posToDelete, strToFind.size());
+					cout << "SET THAT WE WERE FINDING:" << endl << strToFind << endl;
+				}
+				else {
+					break;
+				}
+			}
+			fin.close();
+			ofstream out(fName);
+			out << strFile;
+			out.close();
+			break;
+		}
+		default: {
+			break;
+		}
+		}
+	}
+
+	void txtBin(string fName) {
+		string Str;
+		cout << "Choose operation" << endl;
+		cout << "1 - to add" << endl << "2 - to read" << endl << "3 - to read by FILO" << endl;
+		cout << "4 - to find" << endl << "5 - to delete" << endl;
+		int operation;
+		cin >> operation;
+		switch (operation) {
+		case 1: {
+			ofstream out(fName, ios::binary | ios::app);
+			for (int i = 0; i < name.length(); i++) {
+				out.put(name[i]);
+			}
+			out.put('\n');
+			string Str = to_string(age);
+			for (int i = 0; i < Str.length(); i++) {
+				out.put(Str[i]);
+			}
+			out.put('\n');
+			Str = to_string(exp);
+			for (int i = 0; i < Str.length(); i++) {
+				out.put(Str[i]);
+			}
+			out.put('\n');
+			break;
+		}
+		case 2: {
+			ifstream in(fName, ios::binary);
+			char c;
+			while (in) {
+				in.get(c);
+				cout << c;
+			}
+			break;
+		}
+		case 3: {
+			ifstream fin(fName, ios::binary);
+			fin.seekg(0, ios::end);
+			long long fSize = fin.tellg();
+			long long curPos = fSize;
+			long long posToShow = 0;
+			curPos--;
+			char c;
+			char ch = ' ';
+			fin.seekg(curPos, ios::beg);
+			while (1) {
+				curPos--;
+				fin.seekg(curPos, ios::beg);
+				fin.get(c);
+				if (c == '\n') {
+					fin.seekg(curPos + 1, ios::beg);
+					ch = ' ';
+					while ((ch != '\n') && (fin) && (!(fin.eof())) && (ch != '\0')) {
+						fin.get(ch);
+						cout << ch;
+					}
+
+				}
+				fin.seekg(curPos, ios::beg);
+
+
+				if (curPos == 0) {
+					fin.seekg(curPos, ios::beg);
+					ch = ' ';
+					while ((ch != '\n') && (fin) && (!(fin.eof())) && (ch != '\0')) {
+						fin.get(ch);
+						cout << ch;
+					}
+					cout << "---" << endl;
+					break;
+				}
+
+				//cout << "THERE WAS 3TH OPTION" << curPos << endl;
+			}
+		}
+		case 4: {
+			char c = ' ';
+			char ch = ' ';
+			int trigger = 0;
+			string probName;
+			string probAge;
+			string probExp;
+			ifstream fin(fName, ios::binary);
+			while (fin) {
+				while (trigger != 3) {
+					if (!fin) {
+						break;
+					}
+					fin.get(c);
+					if (c == '\n') {
+						trigger++;
+					}
+					else {
+
+						if (trigger == 0) {
+							probName += c;
+						}
+						else if (trigger == 1) {
+							probAge += c;
+						}
+						else if (trigger == 2) {
+							probExp += c;
+						}
+					}
+					
+				}
+
+				if ((probName == name) && (probAge==to_string(age)) && (probExp == to_string(exp))) {
+					cout << "OBJECT WAS FOUNDED" << endl;
+				} 
+
+				trigger = 0;
+				probName.clear();
+				probAge.clear();
+				probExp.clear();
+			}
+
+			break;
+		}
+		case 5: {
+			//
+			break;
+		}
+		}
+		return;
+	}
+	void txtBin(string fName, int operation) {
+		string Str;
+		/*cout << "Choose operation" << endl;
+		cout << "1 - to add" << endl << "2 - to read" << endl << "3 - to read by FILO" << endl;
+		cout << "4 - to find" << endl << "5 - to delete" << endl;*/
+		switch (operation) {
+		case 1: {
+			ofstream out(fName, ios::binary | ios::app);
+			for (int i = 0; i < name.length(); i++) {
+				out.put(name[i]);
+			}
+			out.put('\n');
+			string Str = to_string(age);
+			for (int i = 0; i < Str.length(); i++) {
+				out.put(Str[i]);
+			}
+			out.put('\n');
+			Str = to_string(exp);
+			for (int i = 0; i < Str.length(); i++) {
+				out.put(Str[i]);
+			}
+			out.put('\n');
+			break;
+		}
+		case 2: {
+			ifstream in(fName, ios::binary);
+			char c;
+			while (in) {
+				in.get(c);
+				cout << c;
+			}
+			break;
+		}
+		case 3: {
+			ifstream fin(fName, ios::binary);
+			fin.seekg(0, ios::end);
+			long long fSize = fin.tellg();
+			long long curPos = fSize;
+			long long posToShow = 0;
+			curPos--;
+			char c;
+			char ch = ' ';
+			fin.seekg(curPos, ios::beg);
+			while (1) {
+				curPos--;
+				fin.seekg(curPos, ios::beg);
+				fin.get(c);
+				if (c == '\n') {
+					fin.seekg(curPos + 1, ios::beg);
+					ch = ' ';
+					while ((ch != '\n') && (fin) && (!(fin.eof())) && (ch != '\0')) {
+						fin.get(ch);
+						cout << ch;
+					}
+
+				}
+				fin.seekg(curPos, ios::beg);
+
+
+				if (curPos == 0) {
+					fin.seekg(curPos, ios::beg);
+					ch = ' ';
+					while ((ch != '\n') && (fin) && (!(fin.eof())) && (ch != '\0')) {
+						fin.get(ch);
+						cout << ch;
+					}
+					cout << "---" << endl;
+					break;
+				}
+
+				//cout << "THERE WAS 3TH OPTION" << curPos << endl;
+			}
+		}
+		case 4: {
+			char c = ' ';
+			char ch = ' ';
+			int trigger = 0;
+			string probName;
+			string probAge;
+			string probExp;
+			ifstream fin(fName, ios::binary);
+			while (fin) {
+				while (trigger != 3) {
+					if (!fin) {
+						break;
+					}
+					fin.get(c);
+					if (c == '\n') {
+						trigger++;
+					}
+					else {
+
+						if (trigger == 0) {
+							probName += c;
+						}
+						else if (trigger == 1) {
+							probAge += c;
+						}
+						else if (trigger == 2) {
+							probExp += c;
+						}
+					}
+
+				}
+
+				if ((probName == name) && (probAge == to_string(age)) && (probExp == to_string(exp))) {
+					cout << "OBJECT WAS FOUNDED" << endl;
+				}
+
+				trigger = 0;
+				probName.clear();
+				probAge.clear();
+				probExp.clear();
+			}
+
+			break;
+		}
+		case 5: {
+			//
+			break;
+		}
+		}
+		return;
+	}
+
+	void binBin(string fName) {
+		string Str;
+		cout << "Choose operation" << endl;
+		cout << "1 - to add" << endl << "2 - to read" << endl << "3 - to read by FILO" << endl;
+		cout << "4 - to find" << endl << "5 - to delete" << endl;
+		int operation;
+		cin >> operation;
+		switch (operation) {
+		case 1: {
+			ofstream fout(fName, ios::binary | ios::app);
+			char *chArr = _strdup(name.c_str());// im not sure if it works
+			//but if it is...
+			fout.write((char*)&this->name, sizeof(name));
+			fout.write((char*)&age, sizeof(age));
+			fout.write((char*)&exp, sizeof(exp));
+			break;
+		}
+		case 2: {
+			ifstream fin(fName, ios::binary);
+			string _name;
+			int _age;
+			int _exp;
+			fin.seekg(ios::end);
+			int memoryRemain = fin.tellg();
+			fin.seekg(ios::beg);
+
+			while (memoryRemain >= 0) {
+				fin.read((char*)&_name, sizeof(_name));
+				fin.read((char*)&_age, sizeof(_age));
+				fin.read((char*)&_exp, sizeof(_exp));
+				cout << _name << endl << _age << endl << _exp << endl;
+
+				memoryRemain -= sizeof(_name) + sizeof(_age) + sizeof(_exp);
+			}
+			break;
+		}
+		case 0: {
+			break;
+		}
+		default: {
+			break;
+		}
+		}
+		return;
+	}
+};
+	
+template<class T>
+void arrAdd(T* arr, int N) {
+	T* copy = new T[N + 1];
+	for (int i = 0; i < N; i++) {
+		copy[i] = arr[i];
+	}
+	delete[]arr;
+	arr = new T[N + 1];
+	for (int i = 0; i < N; i++) {
+		arr[i] = copy[i];
+	}
+	delete[] copy;
+}
+
+int main() {
+	Tourist tourist = Tourist();
+	cout << tourist;
+	Tourist t;
+	int n;
+	int firstChoise;
+	bool f = true; 
+	int elNum;
+	int fileTypeTrig = 0;
+	try {
+		do {
+			cout << "1 - Enter array" << endl << "2 - Read array by file" << endl;
+			cin >> firstChoise;
+			switch (firstChoise) {
+			case 1: {
+				cout << "ENTER ARRAY SIZE" << endl;
+				int arrSize;
+				cin >> arrSize;
+				Tourist* tourArr = new Tourist[arrSize];
+				for (int i = 0; i < arrSize; i++) {
+					cin >> tourArr[i];
+				}
+				while (1) {
+					cout << "Choose operation" << endl;
+					cout << "1 - to add" << endl << "2 - to read file" << endl << "3 - to read by FILO" << endl;
+					cout << "4 - to find" << endl << "5 - to delete" << endl;
+					int secondChoise;
+					cin >> secondChoise;
+					switch (secondChoise) {
+					case 1: {
+						cout << "1 - txtBIN" << endl << "2 - txtTXT" << endl << "binBin" << endl;
+						cin >> fileTypeTrig;
+						switch (fileTypeTrig) {
+						case 1: {
+							cout << "ENTER NUM OF EL OR 99 TO ALL ELEMENTS" << endl;
+							cin >> elNum;
+							if (elNum == 99) {
+								for (int i = 0; i < arrSize; i++) {
+									tourArr[i].txtBin("txtBin.txt", FILEADD);
+								}
+							}
+							else {
+								tourArr[elNum - 1].txtBin("txtBin.txt", FILEADD);
+							}
+							break;
+						}
+						case 2: {
+							cout << "ENTER NUM OF EL OR 99 TO ALL ELEMENTS" << endl;
+							cin >> elNum;
+							if (elNum == 99) {
+								for (int i = 0; i < arrSize; i++) {
+									tourArr[i].txtTxt("txtBin.txt", FILEADD);
+								}
+							}
+							else {
+								tourArr[elNum - 1].txtTxt("txtBin.txt", FILEADD);
+							}
+							break;
+						}
+						}
+						break;
+					}
+					case 2: {
+						cout << "1 - txtBIN" << endl << "2 - txtTXT" << endl << "binBin" << endl;
+						cin >> fileTypeTrig;
+						switch (fileTypeTrig) {
+						case 1: {
+							tourArr[0].txtBin("txtBin.txt", 2);
+							break;
+						}
+						case 2: {
+							tourArr[0].txtTxt("txtTxt.txt", 2);
+							break;
+						}
+						}
+						break;
+					}
+					}
+				}
+				break;
+			}
+
+			}
+			cout << "1 - txtTxt" << endl << "2 - txtBin" << endl << "3 - binBin" << endl;
+			cin >> n;
+			switch (n) {
+			case 1: {
+				tourist.txtTxt("txtTxt.txt");
+				break;
+			}
+			case 2: {
+				tourist.txtBin("txtBin.txt");
+				break;
+			}
+			case 3: {
+				tourist.binBin("binBin");
+				break;
+			}
+			case 4: {
+
+				break;
+			}
+			case 0:
+			{
+				f = false;
+				break;
+			}
+			}
+		} while (f);
+	}
+	catch (FileIsNotOpened) {
+		cout << "FILE IS NOT OPENED" << endl;
+		return 1;
+	}
+	catch (...) {
+		cout << "UNKNOWN ERROR" << endl;
+		return 1;
+	}
+	return 0;
+}
+
