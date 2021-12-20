@@ -1,0 +1,773 @@
+#include <iostream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+class ListException {
+    int exept;
+
+public:
+    ListException(int excpt) : exept{ excpt } {};
+    void err() {
+        switch (exept) {
+        case 1:
+            cout << "Size error\nWe can't find this index\n";
+            break;
+        case 2:
+            cout << "Num error\n Positive numbers only\n";
+            break;
+        case 3:
+            cout << "Memory error" << endl;
+            break;
+        case 228:
+            cout << "Error\n";
+            break;
+        }
+    }
+};
+
+
+template <typename T>
+class El {
+public:
+    El* pNext;
+    T data;
+
+    El(T data = T(), El* pNext = nullptr) {
+        this->data = data;
+        this->pNext = pNext;
+    }
+};
+
+template <typename T>
+class List {
+    int Size;
+    El<T>* head;
+        
+public:
+    List() {
+        Size = 0;
+        head = nullptr;
+    }
+    List(const List& obj) {
+        for (int i = 0; i < Size; i++) {
+            addEnd(obj[i]);
+        }
+    }
+    ~List() {
+        clear();
+    }
+    void delBeg() {
+        El<T>* temp = head;
+        head = head->pNext;
+        delete temp;
+        Size--;
+    }
+    void addEnd(T data) {
+        if (head == nullptr) {
+            head = new El<T>(data);
+        }
+        else {
+            El<T>* current = this->head;
+
+            while (current->pNext != nullptr) {
+                current = current->pNext;
+            }
+            current->pNext = new El<T>(data);
+        }
+
+        Size++;
+    }
+    void clear() {
+        while (Size) {
+            delBeg();
+        }
+    }
+    int getSize() { return Size; }
+    T& operator[](const int index) {
+        int counter = 0;
+        if (index < 0) throw(1);
+        if (index > this->getSize()) throw 1;
+        El<T>* current = this->head;
+
+        while (current != nullptr) {
+            if (counter == index) {
+                return current->data;
+            }
+            current = current->pNext;
+            counter++;
+        }
+    }
+    
+    T& getEl(const int index) {
+        int counter = 0;
+        if (index < 0) throw(1);
+        El<T>* current = this->head;
+
+        while (current != nullptr) {
+            if (counter == index) {
+                return current->data;
+            }
+            current = current->pNext;
+            counter++;
+        }
+    }
+    void addBeg(T data) {
+        head = new El<T>(data, head);
+        Size++;
+    }
+    void insert(T data, int index) {
+        if (index == 0) {
+            addBeg(data);
+        }
+        else {
+            El<T>* previous = this->head;
+
+            for (int i = 0; i < index - 1; i++) {
+                previous = previous->pNext;
+            }
+
+            El<T>* newNode = new El<T>(data, previous->pNext);
+
+            previous->pNext = newNode;
+            Size++;
+        }
+    }
+
+    void removeAt(int index) {
+        if (index == 0) {
+            delBeg();
+        }
+        else {
+            El<T>* previous = this->head;
+            for (int i = 0; i < index - 1; i++) {
+                previous = previous->pNext;
+            }
+
+            El<T>* toDelete = previous->pNext;
+
+            previous->pNext = toDelete->pNext;
+
+            delete toDelete;
+
+            Size--;
+        }
+    }
+
+    void delEnd() {
+        removeAt(Size - 1);
+    }
+
+    void sortByAll() {
+        int choice;
+        std::cout << "Enter type sort " << std::endl;
+        std::cout << "1 - <<" << std::endl;
+        std::cout << "2 - >>" << std::endl;
+
+        El<T>* cur1 = head;
+        El<T>* cur2 = head;
+        std::cin >> choice;
+        switch (choice) {
+        case 2:
+
+            for (int i = 0; i < Size; i++) {
+                for (int j = 0; j < Size - 1; j++) {
+                    if (cur1->data < cur2->data) {
+                        T temp = cur1->data;
+                        cur1->data = cur2->data;
+                        cur2->data = temp;
+                    }
+                    cur2 = cur2->pNext;
+                }
+                cur2 = head;
+                cur1 = head->pNext;
+                for (int k = 0; k < i; k++) {
+                    cur1 = cur1->pNext;
+                }
+            }
+            break;
+        case 1:
+
+            for (int i = 0; i < Size; i++) {
+                for (int j = 0; j < Size - 1; j++) {
+                    if (cur1->data > cur2->data) {
+                        T temp = cur1->data;
+                        cur1->data = cur2->data;
+                        cur2->data = temp;
+                    }
+                    cur2 = cur2->pNext;
+                }
+                cur2 = head;
+                cur1 = head->pNext;
+                for (int k = 0; k < i; k++) {
+                    cur1 = cur1->pNext;
+                }
+            }
+            break;
+        default:
+            break;
+        }
+    }
+    friend ostream& operator<< (std::ostream& out, List<T>& list) {
+        for (auto& l : list)
+            out << l << " ";
+        return out;
+    }
+
+    friend bool operator== (List &a, List& obj) {
+        int matchTrig = 0;
+        if (a.getSize() == obj.getSize()) {
+            for (int i = 0; i < a.getSize(); i++) {
+                if (a[i] == obj[i]) {
+                    matchTrig++;
+                }
+            }
+            if (matchTrig == a.getSize()) {
+                return true;
+            }
+        } 
+        return false;
+    }
+
+    class Iterator {
+        friend class List;
+
+    private:
+        El<T>* nodePtr;
+        // The constructor is private, so only our friends
+        // can create instances of Iterators.
+        Iterator(El<T>* newPtr) : nodePtr(newPtr) {}
+
+    public:
+        Iterator() : nodePtr(nullptr) {}
+
+        bool operator!=(const Iterator& itr) const {
+            return nodePtr != itr.nodePtr;
+        }
+        T& operator*() const { return nodePtr->data; }
+        Iterator operator++() {
+            nodePtr = nodePtr->pNext;
+            return nodePtr;
+        }
+        Iterator operator++(int) {
+            Iterator temp = *this;
+            nodePtr = nodePtr->pNext;
+            return temp;
+        }
+    };
+
+    Iterator begin() const { return Iterator(head); }
+    Iterator end() const { return Iterator(nullptr); }
+    Iterator Insert(List<T>::Iterator position, const T& value) {
+        El<T>* newNode = new El<T>(value, position.nodePtr->next);
+        if (position.nodePtr == head + getSize()) head + getSize() = newNode;
+        position.nodePtr->next = newNode;
+        return position;
+    }
+    Iterator erase(List<T>::Iterator position) {
+        El<T>* toDelete = position.nodePtr->next;
+        position.nodePtr->next = position.nodePtr->next->next;
+        if (toDelete == head + getSize()) head + getSize() = position.nodePtr;
+        delete toDelete;
+        return position;
+    }
+};
+
+void printList(List<int>& list_int, List<double>& list_double,
+List<string>& list_string) {
+    cout << "Int list: " << endl
+        << list_int << endl
+        << "Double list: " << endl
+        << list_double << endl
+        << "String list: " << endl
+        << list_string << endl;
+}
+
+void sortList(List<int>& list_int, List<double>& list_double,
+List<string>& list_string) {
+    int chooser{ 1 };
+    cout << "Enter a num to sort or letter to exit" << endl;
+    while (cin >> chooser) {
+        system("clear");
+        cout << "Enter type sort for int List" << endl;
+        list_int.sortByAll();
+        cout << "Enter type sort for string List" << endl;
+        list_string.sortByAll();
+        cout << "Enter type sort for double List" << endl;
+        list_double.sortByAll();
+        cout << "Enter a num to sort or letter to exit" << endl;
+    }
+}
+//
+//void menu() {
+//    List<int> list;
+//    List<double> list_d;
+//    List<string> strList;
+//
+//    list.addEnd(1);
+//    list.addEnd(2);
+//    list.addEnd(3);
+//
+//    list_d.addEnd(1.11);
+//    list_d.addEnd(2.22);
+//    list_d.addEnd(3.33);
+//
+//    strList.addEnd("There");
+//    strList.addEnd("Are");
+//    strList.addEnd("Strings");
+//
+//    cout << "Int list: " << endl;
+//    for (int i = 0; i < list.getSize(); i++) cout << list[i] << " ";
+//    cout << endl << endl;
+//    cout << "Double list: " << endl;
+//    for (int i = 0; i < list_d.getSize(); i++) cout << list_d[i] << " ";
+//    cout << endl << endl;
+//    cout << "String list: " << endl;
+//    for (int i = 0; i < strList.getSize(); i++) cout << strList[i] << " ";
+//    cout << endl << endl;
+//
+//    cout << "Delete first el-ts" << endl;
+//    list.delBeg();
+//    strList.delBeg();
+//    list_d.delBeg();
+//    cout << "Int list: " << endl << endl;
+//    for (int i = 0; i < list.getSize(); i++) cout << list[i] << " ";
+//    cout << endl;
+//    cout << "Double list: " << endl << endl;
+//    for (int i = 0; i < list_d.getSize(); i++) cout << list_d[i] << " ";
+//    cout << endl;
+//    cout << "String list: " << endl << endl;
+//    for (int i = 0; i < strList.getSize(); i++) cout << strList[i] << " ";
+//    cout << endl << endl;
+//
+//    //----------Find------------------
+//    cout << "Find in int array " << endl;
+//    int find_i;
+//    cin >> find_i;
+//    int findTrig = 0;
+//    cout << "Founded: " << endl;
+//    for (int i = 0; i < list.getSize(); i++) {
+//        if (list[i] == find_i) {
+//            cout << list[i];
+//            findTrig++;
+//        }
+//    }
+//    if (findTrig == 0) {
+//        cout << "NOTHING" << endl;
+//    }
+//    findTrig = 0;
+//    cout << endl;
+//    cout << "Find in double " << endl;
+//    double find_d;
+//    cin >> find_d;
+//
+//    cout << "Founded: " << endl;
+//    for (int i = 0; i < list_d.getSize(); i++) {
+//        if (list_d[i] == find_d) {
+//            cout << list[i];
+//            findTrig++;
+//        }
+//    }
+//    if (findTrig == 0) {
+//        cout << "NOTHING" << endl;
+//    }
+//    findTrig = 0;
+//
+//    cout << endl;
+//    cout << "Find in string " << endl;
+//    string find_str;
+//    cin >> find_str;
+//
+//    cout << "Founded: " << endl;
+//    for (int i = 0; i < strList.getSize(); i++) {
+//        if (strList[i] == find_str) {
+//            cout << strList[i];
+//            findTrig++;
+//        }
+//    }
+//    if (findTrig) {
+//        cout << "NOTHING" << endl;
+//    }
+//    findTrig = 0;
+//    cout << endl;
+//    strList.sortByAll();
+//    for (int i = 0; i < strList.getSize(); i++) cout << strList[i] << " ";
+//    cout << endl;
+//}
+
+int main()
+{
+    try {
+        
+        int type;
+        cout << "1 - int\n2 - double\n3 - string" << endl;
+        cin >> type;
+        int arrSize;
+
+        switch (type) {
+        case 1: {
+            cout << "Enter num of objects in da array" << endl;
+            cin >> arrSize;
+            vector <vector<int>> arr(arrSize);
+            int el;
+            int setSize;
+            int elSize;
+            for (int k = 0; k < arrSize; k++) {
+                cout << "Enter size of " << k << " object" << endl;
+                cin >> elSize;
+                for (int i = 0; i < elSize; i++) {
+                    cout << "Enter " << i + 1 << " element of " << k << " object" << endl;
+                    cin >> el;
+                    arr[k].push_back(el);
+                }
+            }
+            int oldSize = arr.size();
+            int matchTrig = 0;
+            while (1) {
+                cout << "Choose operation" << endl;
+                cout << "1 - delete dublicates" << endl
+                    << "2 - search subarray" << endl
+                    << "3 - print" << endl;
+                int operation;
+                cin >> operation;
+                switch (operation) {
+                case 1: {
+                    for (int i = 0; i < arrSize; i++) {
+                        for (int j = i + 1; j < arrSize; j++) {
+                            if (arr[i].size() == arr[j].size()) {
+                                for (int k = 0; k < arr[i].size(); k++) {
+                                    if (arr[i][k] == arr[j][k]) {
+                                        matchTrig++;
+                                    }
+                                    else {
+                                        matchTrig = 0;
+                                        break;
+                                    }
+                                }
+                                if (matchTrig == arr[i].size()) {
+                                    arr.erase(arr.begin() + j);
+                                    j--;
+                                    arrSize--;
+                                }
+                            }
+                            matchTrig = 0;
+                        }
+                    }
+                    break;
+                }
+                case 2: {
+                    int secArrSize;
+                    cout << "Enter subarray size" << endl;
+                    cin >> secArrSize;
+                    vector <vector<int>> secArr(secArrSize);
+
+                    int el;
+                    int setSize;
+                    int elSize;
+                    for (int k = 0; k < secArrSize; k++) {
+                        cout << "Enter size of " << k << " object" << endl;
+                        cin >> elSize;
+                        for (int i = 0; i < elSize; i++) {
+                            cout << "Enter " << i + 1 << " element of " << k << " object" << endl;
+                            cin >> el;
+                            secArr[k].push_back(el);
+                        }
+                    }
+                    //
+                    int secCur = 0;
+                    bool isEqual = false;
+                    int arrTrig = 0;
+
+                    for (int i = 0; i < arrSize; i++) {
+                        int matchTrig = 0;
+                        //is equal???
+                        if (arr[i] == secArr[secCur]) {
+                            isEqual = true;
+                        }
+                        else {
+                            isEqual = false;
+                        }
+                        if (isEqual) {
+                            arrTrig++;
+                            if (arrTrig == secArrSize) {
+                                cout << "WE FOUND SUBARRAY" << endl;
+                                break;
+                            }
+                        }
+                        else {
+                            arrTrig = 0;
+                            i--;
+                            secCur = 0;
+                            isEqual = false;
+                        }
+                        secCur++;
+
+                    }
+                    break;
+                }
+                case 3: {
+                    for (int i = 0; i < arr.size(); i++) {
+                        for (int j = 0; j < arr[i].size(); j++) {
+                            cout << arr[i][j] << " ";
+                        }
+                        cout << endl;
+                    }
+                    break;
+                }
+                case 0: {
+                    return 0;
+                }
+                default: {
+                    break;
+                }
+                }
+            }
+
+            break;
+        }
+        case 2: {
+            cout << "Enter num of objects in da array" << endl;
+            cin >> arrSize;
+            vector <List<double>> arr(arrSize);
+            double el;
+            int setSize;
+            int elSize;
+            for (int k = 0; k < arrSize; k++) {
+                cout << "Enter size of " << k << " object" << endl;
+                cin >> elSize;
+                for (int i = 0; i < elSize; i++) {
+                    cout << "Enter " << i + 1 << " element of " << k << " object" << endl;
+                    cin >> el;
+                    arr[k].addEnd(el);
+                }
+            }
+            
+            int matchTrig = 0;
+            while (1) {
+                cout << "Choose operation" << endl;
+                cout << "1 - delete dublicates" << endl
+                    << "2 - search subarray" << endl
+                    << "3 - print" << endl;
+                int operation;
+                cin >> operation;
+                switch (operation) {
+                case 1: {
+                    for (int i = 0; i < arrSize; i++) {
+                        for (int j = i + 1; j < arrSize; j++) {
+                            if (arr.at(i).getSize() == arr.at(j).getSize()) {
+                                for (int k = 0; k < arr[i].getSize(); k++) {
+                                    if (arr[i].getEl(k) == arr[j].getEl(k)) {
+                                        matchTrig++;
+                                    }
+                                }
+                                if (matchTrig == arr[i].getSize()) {
+                                    arr.erase(arr.begin() + j);
+                                    arrSize--;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 2: {
+                    int secArrSize;
+                    cout << "Enter subarray size" << endl;
+                    cin >> secArrSize;
+                    vector <List<double>> secArr(secArrSize);
+
+                    double el;
+                    int setSize;
+                    int elSize;
+                    for (int k = 0; k < secArrSize; k++) {
+                        cout << "Enter size of " << k << " object" << endl;
+                        cin >> elSize;
+                        for (int i = 0; i < elSize; i++) {
+                            cout << "Enter " << i + 1 << " element of " << k << " object" << endl;
+                            cin >> el;
+                            secArr[k].addEnd(el);
+                        }
+                    }
+                    //
+                    int secCur = 0;
+                    bool isEqual = false;
+                    int arrTrig = 0;
+
+                    for (int i = 0; i < arrSize; i++) {
+                        int matchTrig = 0;
+                        //is equal???
+                        if (arr[i] == secArr[secCur]) {
+                            isEqual = true;
+                        }
+                        else {
+                            isEqual = false;
+                        }
+                        if (isEqual) {
+                            arrTrig++;
+                            if (arrTrig == secArrSize) {
+                                cout << "WE FOUND SUBARRAY" << endl;
+                                break;
+                            }
+                        }
+                        else {
+                            arrTrig = 0;
+                            i--;
+                            secCur = 0;
+                            isEqual = false;
+                        }
+                        secCur++;
+
+                    }
+                    break;
+                }
+                case 3: {
+                    for (int i = 0; i < arrSize; i++) {
+                        cout << arr[i] << endl;
+                    }
+                    break;
+                }
+                case 0: {
+                    return 0;
+                }
+                default: {
+                    break;
+                }
+                }
+            }
+
+            break;
+        }
+        case 3: {
+            cout << "Enter num of objects in da array" << endl;
+            cin >> arrSize;
+            vector <List<string>> arr(arrSize);
+            string el;
+            int setSize;
+            int elSize;
+            for (int k = 0; k < arrSize; k++) {
+                cout << "Enter size of " << k << " object" << endl;
+                cin >> elSize;
+                for (int i = 0; i < elSize; i++) {
+                    cout << "Enter " << i + 1 << " element of " << k << " object" << endl;
+                    rewind(stdin);
+                    getline(cin, el);
+                    arr[k].addEnd(el);
+                }
+            }
+            
+            int matchTrig = 0;
+            while (1) {
+                cout << "Choose operation" << endl;
+                cout << "1 - delete dublicates" << endl
+                    << "2 - search subarray" << endl
+                    << "3 - print" << endl;
+                int operation;
+                cin >> operation;
+                switch (operation) {
+                case 1: {
+                    for (int i = 0; i < arrSize; i++) {
+                        for (int j = i + 1; j < arrSize; j++) {
+                            if (arr.at(i).getSize() == arr.at(j).getSize()) {
+                                for (int k = 0; k < arr[i].getSize(); k++) {
+                                    if (arr[i].getEl(k) == arr[j].getEl(k)) {
+                                        matchTrig++;
+                                    }
+                                }
+                                if (matchTrig == arr[i].getSize()) {
+                                    arr.erase(arr.begin() + j);
+                                    arrSize--;
+                                }
+                                i--;
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 2: {
+                    int secArrSize;
+                    cout << "Enter subarray size" << endl;
+                    cin >> secArrSize;
+                    vector <List<string>> secArr(secArrSize);
+
+                    string el;
+                    int setSize;
+                    int elSize;
+                    for (int k = 0; k < secArrSize; k++) {
+                        cout << "Enter size of " << k << " object" << endl;
+                        cin >> elSize;
+                        for (int i = 0; i < elSize; i++) {
+                            cout << "Enter " << i + 1 << " element of " << k << " object" << endl;
+                            cin >> el;
+                            secArr[k].addEnd(el);
+                        }
+                    }
+                    //
+                    int secCur = 0;
+                    bool isEqual = false;
+                    int arrTrig = 0;
+
+                    for (int i = 0; i < arrSize; i++) {
+                        int matchTrig = 0;
+                        //is equal???
+                        if (arr[i] == secArr[secCur]) {
+                            isEqual = true;
+                        }
+                        else {
+                            isEqual = false;
+                        }
+                        if (isEqual) {
+                            arrTrig++;
+                            if (arrTrig == secArrSize) {
+                                cout << "WE FOUND SUBARRAY" << endl;
+                                break;
+                            }
+                        }
+                        else {
+                            arrTrig = 0;
+                            i--;
+                            secCur = 0;
+                            isEqual = false;
+                        }
+                        secCur++;
+
+                    }
+                    break;
+                }
+                case 3: {
+                    for (int i = 0; i < arrSize; i++) {
+                        cout << arr[i] << endl;
+                    }
+                    break;
+                }
+                case 0: {
+                    return 0;
+                }
+                default: {
+                    break;
+                }
+                }
+            }
+
+            break;
+        }
+        
+        default: {
+            break;
+        }
+        }
+
+        
+       
+    }
+    catch (ListException& ex) {
+        system("clear");
+        ex.err();
+    }
+}
+
+
+//Массив контейнеров
+//Ввод с клавы
+//Дубл дел
+//Поиск подмассива
+//
