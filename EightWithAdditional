@@ -1,0 +1,361 @@
+#include <iostream>
+#include <cstdlib>
+#include <string>
+#include <exception>
+using namespace std;
+ 
+class myException {
+    int ex;
+public:
+    explicit myException() {
+        ex = 0;
+    }
+    explicit myException(int n) {
+        ex = n;
+    }
+    ~myException() {}
+};
+ 
+template <class T>
+class posIntStack {
+    T* st;
+    int size;
+public:
+    explicit posIntStack() {
+        size = 0;
+    }
+    explicit posIntStack(int _size) {
+        size = _size;
+        st = new T[size];
+        for (int i = size - 1; i >= 0; i--) {
+            cout << "Enter element of stack" << endl;
+            cin >> st[i];
+            
+        }
+    }
+    posIntStack(const posIntStack &obj) {
+        size = obj.size;
+        st = new T[size];
+        for (int i = 0; i < size; i++) {
+            st[i] = obj.st[i];
+        }
+    }
+    ~posIntStack() {
+        delete[] st;
+    }
+ 
+    void print() {
+        cout << "Array printing" << endl;
+        for (int i = 0; i < size; i++) {
+            if (i < 9) {
+                cout << " " << i + 1 << ": " << st[i] << endl;
+            }
+            else {
+                cout << i + 1 << ": " << st[i] << endl;
+            }
+        }
+        cout << endl;
+    }
+ 
+    void push() {
+        if (size != 0) {
+ 
+            int num{};
+            cout << "Enter num for push" << endl;
+            cin >> num;
+            if (num < 0) {
+                myException a(1);
+                throw(a);
+            }
+            size++;
+            T* copy = new T[size];
+            for (int i = 1; i < size; i++) {
+                copy[i] = st[i - 1];
+            }
+            copy[0] = num;
+            delete[]st;
+            st = new T[size];
+            for (int i = 0; i < size; i++) {
+                st[i] = copy[i];
+            }
+            delete[] copy;
+        }
+        else {
+            size = 1;
+            st = new T[size];
+            cout << "Enter num for push" << endl;
+            cin >> st[0];
+        }
+    }
+ 
+    void pop() {
+        if (size != 0) {
+            cout << "On the top of stack: " << st[0] << endl;
+            size--;
+            T* copy = new T[size];
+            for (int i = 1; i < size + 1; i++) {
+                copy[i - 1] = st[i];
+            }
+            delete[]st;
+            st = new T[size];
+            for (int i = 0; i < size; i++) {
+                st[i] = copy[i];
+            }
+            delete[] copy;
+        }
+        else {
+            throw("Attempt to delete el in the empty stack");
+        }
+    }
+ 
+    void printEl() {
+        int num;
+        cout << "Enter num of elements to print" << endl;
+        cin >> num;
+        num--;
+        if (num > size) {
+            throw(1);
+        }
+        if (num < 0) {
+            double i{};
+            throw (i);
+        }
+        cout << "Element number " << num + 1 << " is " << st[num] << endl;
+    }
+ 
+    int getSize() {
+        return size;
+    }
+ 
+    void deleteDubl() {
+        int cur;
+        int valueToDelete{};
+        for (int i = 0; i < size - 1; i++) {
+            for (int j = 1; j < size; j++) {
+                if ((j != i) && (st[j] == st[i])) {
+                    for (int k = j; k > 0; k--) {
+                        swap(st[k], st[k - 1]);
+                    }
+                    pop();
+                }
+            }
+        }
+    }
+ 
+    void setCopying() {
+        int start;
+        int end;
+        cout << "Enter diapason" << endl;
+        cin >> start >> end;
+ 
+        cout << "Enter pos to insert" << endl;
+        int pos;
+        cin >> pos;
+ 
+        start--;
+        end--;
+        //pos--;
+ 
+        if ((start < 0) || (end < 0)) {
+            myException e;
+            throw(e);
+        }
+        if ((start > size) || (end > size)) {
+            throw 1;
+        }
+        if (start > end) {
+            swap(start, end);
+        }
+ 
+        int num = end - start + 1;
+        T* arr = new T[num];
+        int j = start;
+        for (int k = 0; k < num; j++, k++) {
+            arr[k] = st[j];
+        }
+ 
+        T *copySt = new T[size + num];
+        for (int i = 0; i < size; i++) {
+            copySt[i] = st[i];
+        }
+        delete[] st;
+ 
+        st = new T[size + num];
+        for (int i = 0; i < size; i++) {
+            st[i] = copySt[i];
+        }
+ 
+        for (int i = size; i < size + num; i++) {
+            st[i] = 0;
+        }
+        
+        /*while (k > pos) {
+            st[size + num - i] = st[k];
+            i++;
+            k--;
+        }*/
+        for (int i = 0; i < size - pos; i++) {
+            st[pos + num + i] = st[pos + i];
+        }
+ 
+        for (int i = 0; i < num; i++) {
+            st[pos + i] = arr[i];
+        }
+ 
+        size = size + num;
+ 
+        delete[] copySt;
+    }
+ 
+    void setSearch() {
+        int num;
+        cout << "Enter num of el in da set";
+        cin >> num;
+        
+        if (num > size) {
+            return;
+        }
+ 
+        T* arr = new T[num];
+        for (int i = 0; i < num; i++) {
+            cout << endl << i + 1 << "st element: ";
+            cin >> arr[i];
+        }
+        
+        int matchNum = 0;
+        int curArrNum = 0;
+        for (int i = 0; i < size; i++) {
+            if (st[i] == arr[curArrNum]) {
+                curArrNum++;
+                matchNum++;
+            }
+            else {
+                curArrNum = 0;
+                matchNum = 0;
+            }
+            if (matchNum == num) {
+                cout << endl << "Set founded" << endl;
+                for (int k = 0; k < num; k++) {
+                    cout << arr[k] << " ";
+                }
+                curArrNum = 0;
+                matchNum = 0;
+            }
+        }
+    }
+};
+ 
+void myTerminate() {
+ 
+    cout << "TERMINATE" << endl << "Program comilation will be stopped. Enter enter." << endl;
+    string str;
+    rewind(stdin);
+    getline(cin, str);
+    if (str == "12345") {
+        exit(0);
+    }
+    else {
+        abort();
+    }
+}
+void myUnexpected() {
+    cout << "UNEXPECTED" << endl << "Program comilation will be stopped. Enter enter." << endl;
+    string str;
+    rewind(stdin);
+    getline(cin, str);
+    if (str == "12345") {
+        exit(0);
+    }
+    else {
+        abort();
+    }
+}
+ 
+bool menu(posIntStack<int>& obj) {
+    cout << endl;
+    cout << "2: Push" << endl;
+    cout << "3: Pop" << endl;
+    cout << "4: Stack print" << endl;
+    cout << "5: Element print" << endl;
+    cout << "6: Delete same values" << endl;
+    cout << "7: Copy set in da cur pos" << endl;
+    cout << "8: Search set of elements in the stack" << endl;
+    int n;
+    cin >> n;
+    switch (n) {
+    case 2: {
+        obj.push();
+        break;
+    }
+    case 3: {
+        obj.pop();
+        break;
+    }
+    case 4: {
+        obj.print();
+        break;
+    }
+    case 5: {
+        obj.printEl();
+        break;
+    }
+    case 6: {
+        obj.deleteDubl();
+        break;
+    }
+    case 7: {
+        obj.setCopying();
+        break;
+    }
+    case 8: {
+        obj.setSearch();
+        break;
+    }
+    case 0: {
+        return 1;
+    }
+    default: {
+        cout << "Nothing happened" << endl;
+        break;
+    }
+    }
+    return 0;
+}
+ 
+int main()
+{
+    set_terminate(myTerminate);
+    set_unexpected(myUnexpected);
+    //throw 0;
+    int num;
+    cout << "enter num of el in da stack" << endl;
+    cin >> num;
+    posIntStack<int> obj(num);
+    obj.print();
+    try {
+        while (!(menu(obj))) {}
+    }
+    catch (string) {
+        cout << "Exception number 1" << endl;
+    }
+    catch (int) {
+        cout << "Exception number 2" << endl;
+    }
+    catch (double) {
+        cout << "Exception number 3" << endl;
+    }
+    catch (myException e) {
+        fflush(stdout);
+        cout << "Say no for negative numbers" << endl;
+    }
+    catch (...) {
+        cout << "Something went wrong. But we doesn't know what. Be ready for sudden KABOOM" << endl;
+    }
+    return 0;
+}
+ 
+//delete dublicate(1 save, another delete)
+//copying набор элементов в указанную позицию
+//набор элементов - если есть - вывести
+//
+//
